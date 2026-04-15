@@ -1,4 +1,4 @@
-# CMML3 ICA1 Mini-project 7-3003
+# CMML3 ICA1 Mini-project7 - by 3003
 
 This repository contains code for my CMML3 ICA1 mini-project on modelling the depolarising afterpotential (DAP) in oxytocin neurones using HypoMod.
 

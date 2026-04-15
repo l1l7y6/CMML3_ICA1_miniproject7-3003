@@ -219,7 +219,7 @@ class SpikeModel(ModThread):
         kAHP = spikeparams["kAHP"]
         halflifeAHP = spikeparams["halflifeAHP"]
         kDAP = spikeparams['kDAP']
-        halflifeDAP = spikeparams['kDAP']
+        halflifeDAP = spikeparams['halflifeDAP']
 
         halflifeB = secparams["halflifeB"]
         halflifeE = secparams["halflifeE"]

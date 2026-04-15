@@ -1,11 +1,4 @@
 ## HypoModPython
-##
-## Started 5/11/18
-## Continued 24/8/22
-##
-## Duncan MacGregor
-##
-
 
 import wx
 

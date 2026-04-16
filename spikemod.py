@@ -25,6 +25,15 @@ class SecData():
         self.secC = pdata(size)   # slow Ca2+
         self.secB = pdata(size)   # spike broadening
 
+
+class StateData():
+    def __init__(self, size):
+        self.size = size
+        self.memV = pdata(size)   # membrane potential
+        self.nmdaX = pdata(size)  # fast NMDA trigger state
+        self.nmdaS = pdata(size)  # slow NMDA synapse state
+        self.nmdaI = pdata(size)  # voltage-dependent NMDA depolarisation
+
     
 
 class SpikeMod(Mod):
@@ -60,6 +69,7 @@ class SpikeMod(Mod):
 
         # secretion data stores
         self.secdata = SecData(1000000)
+        self.statedata = StateData(1000000)
 
         self.AddTool(self.spikebox)
         self.AddTool(self.secbox)
@@ -103,6 +113,10 @@ class SpikeMod(Mod):
         self.plotbase.AddPlot(PlotDat(self.secdata.secE, 0, 500, 0, 5, "Secretion E", "line", 1, "lightred", 1000 / self.datsample), "secE")
         self.plotbase.AddPlot(PlotDat(self.secdata.secC, 0, 500, 0, 5, "Secretion C", "line", 1, "lightred", 1000 / self.datsample), "secC")
         self.plotbase.AddPlot(PlotDat(self.secdata.secB, 0, 500, 0, 5, "Secretion B", "line", 1, "green", 1000 / self.datsample), "secB")
+        self.plotbase.AddPlot(PlotDat(self.statedata.memV, 0, 500, -80, -30, "Membrane V", "line", 1, "blue", 1000 / self.datsample), "memV")
+        self.plotbase.AddPlot(PlotDat(self.statedata.nmdaX, 0, 500, 0, 2, "NMDA X", "line", 1, "yellow", 1000 / self.datsample), "nmdaX")
+        self.plotbase.AddPlot(PlotDat(self.statedata.nmdaS, 0, 500, 0, 30, "NMDA S", "line", 1, "green", 1000 / self.datsample), "nmdaS")
+        self.plotbase.AddPlot(PlotDat(self.statedata.nmdaI, 0, 500, 0, 6, "NMDA I", "line", 1, "purple", 1000 / self.datsample), "nmdaI")
 
 
     def DefaultPlots(self):
@@ -200,6 +214,7 @@ class SpikeModel(ModThread):
         secsize = self.mod.secdata.size
         spikedata = self.mod.modspike
         secdata = self.mod.secdata
+        statedata = self.mod.statedata
 
         # Parameter stores
         spikeparams = self.params["spike"]
@@ -220,6 +235,12 @@ class SpikeModel(ModThread):
         halflifeAHP = spikeparams["halflifeAHP"]
         kDAP = spikeparams['kDAP']
         halflifeDAP = spikeparams['halflifeDAP']
+
+        # NMDA-based DAP parameters (temporary hard-coded defaults with script overrides)
+        useNMDA = spikeparams.get("useNMDA", 1)
+        kNMDA = spikeparams.get("kNMDA", 0.8)
+        halflifeNMDARise = spikeparams.get("halflifeNMDARise", 8.0)
+        halflifeNMDADecay = spikeparams.get("halflifeNMDADecay", 120.0)
 
         halflifeB = secparams["halflifeB"]
         halflifeE = secparams["halflifeE"]
@@ -258,6 +279,14 @@ class SpikeModel(ModThread):
             tauDAP = 0.0
             kDAP = 0.0
 
+        if useNMDA and kNMDA > 0 and halflifeNMDARise > 0 and halflifeNMDADecay > 0:
+            tauNMDARise = math.log(2) / halflifeNMDARise
+            tauNMDADecay = math.log(2) / halflifeNMDADecay
+        else:
+            tauNMDARise = 0.0
+            tauNMDADecay = 0.0
+            kNMDA = 0.0
+
         # Secretion
         tauB = math.log(2) / halflifeB
         tauE = math.log(2) / halflifeE
@@ -282,6 +311,10 @@ class SpikeModel(ModThread):
         tAHP = 0
 
         tDAP = 0
+        xNMDA = 0.0
+        sNMDA = 0.0
+        iNMDA = 0.0
+        Bnmda = 0.0
 
         tB = 0  # Broadening
         tE = 0  # Fast Ca2+
@@ -335,8 +368,18 @@ class SpikeModel(ModThread):
             tPSP = tPSP + inputPSP - tPSP * tauMem
             tHAP = tHAP - tHAP * tauHAP
             tAHP = tAHP - tAHP * tauAHP
-            tDAP = tDAP - tDAP*tauDAP
-            V = Vrest + tPSP + tDAP - tHAP - tAHP
+            tDAP = tDAP - tDAP * tauDAP
+
+            # NMDA synapse-based DAP
+            xNMDA = xNMDA - xNMDA * tauNMDARise
+            sNMDA = sNMDA + xNMDA - sNMDA * tauNMDADecay
+
+            # Use the non-NMDA membrane potential as the voltage-gating input.
+            Vbase = Vrest + tPSP + tDAP - tHAP - tAHP
+            Bnmda = 1.0 / (1.0 + math.exp(-(Vbase + 40.0) / 6.0))
+            iNMDA = sNMDA * Bnmda
+
+            V = Vbase + iNMDA
 
             #print(f"SpikeModel step {i}  V {V:.2f}  tPSP {tPSP:.2f}  inputPSP {inputPSP:.2f}  nepsp {nepsp}")
 
@@ -378,6 +421,10 @@ class SpikeModel(ModThread):
                 secdata.secE[int(i/datsample)] = tE
                 secdata.secC[int(i/datsample)] = tC
                 secdata.secB[int(i/datsample)] = tB
+                statedata.memV[int(i/datsample)] = V
+                statedata.nmdaX[int(i/datsample)] = xNMDA
+                statedata.nmdaS[int(i/datsample)] = sNMDA
+                statedata.nmdaI[int(i/datsample)] = iNMDA
 
 
             # Spiking
@@ -394,6 +441,7 @@ class SpikeModel(ModThread):
                 tAHP = tAHP + kAHP
 
                 tDAP = tDAP + kDAP
+                xNMDA = xNMDA + kNMDA
 
                 tB = tB + kB
                 tE = tE + kE * CaEnt
@@ -410,6 +458,3 @@ class SpikeModel(ModThread):
 
 
     
-
-
-

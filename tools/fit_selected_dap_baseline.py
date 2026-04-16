@@ -44,6 +44,10 @@ DEFAULT_SPIKE_PARAMS = {
     "kDAP": 0.0,
     "halflifeDAP": 80,
     "useNMDA": 0,
+    "pspmag2": 0.0,
+    "psprate2": 300,
+    "halflifePSP2": 120.0,
+    "nmdaSync": 1,
     "kNMDA": 0.0,
     "halflifeNMDARise": 8.0,
     "halflifeNMDADecay": 120.0,
@@ -151,6 +155,8 @@ def normalised_rmse(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def score_stage1(model: SpikeDat, target: SpikeDat) -> float:
+    # Stage 1 is a coarse search focused on matching overall rate and the
+    # early histogram/hazard structure before bringing IoD into the score.
     hist_target = np.asarray(target.hist5norm[:40], dtype=float)
     hist_model = np.asarray(model.hist5norm[:40], dtype=float)
     haz_target = np.asarray(target.haz5[:40], dtype=float)
@@ -162,6 +168,8 @@ def score_stage1(model: SpikeDat, target: SpikeDat) -> float:
 
 
 def score_stage2(model: SpikeDat, target: SpikeDat) -> float:
+    # Stage 2 matches the final report logic more closely by adding IoD.
+    # Lower score means better agreement between model and recording.
     hist_target = np.asarray(target.hist5norm[:40], dtype=float)
     hist_model = np.asarray(model.hist5norm[:40], dtype=float)
     haz_target = np.asarray(target.haz5[:40], dtype=float)

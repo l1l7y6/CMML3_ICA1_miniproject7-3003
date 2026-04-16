@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+import os
 from pathlib import Path
 
 import matplotlib
@@ -10,9 +12,49 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
-SOURCE_XLSX = Path(r"D:\BaiduSyncdisk\CMML\oxydata dap cells.xlsx")
 SELECTED_RECORDINGS = ["MAL11E", "CBA1R8C1"]
 HEADER_ROWS = 5
+DEFAULT_SOURCE_CANDIDATES = (
+    Path(__file__).resolve().parents[1] / "data" / "oxydata dap cells.xlsx",
+    Path(r"D:\BaiduSyncdisk\CMML\oxydata dap cells.xlsx"),
+)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Export the selected DAP recordings from the raw oxytocin spreadsheet."
+    )
+    parser.add_argument(
+        "--source",
+        type=Path,
+        help="Path to the raw 'oxydata dap cells.xlsx' spreadsheet.",
+    )
+    return parser.parse_args()
+
+
+def resolve_source_xlsx(cli_source: Path | None) -> Path:
+    candidates: list[Path] = []
+    if cli_source is not None:
+        candidates.append(cli_source.expanduser())
+
+    env_source = os.environ.get("CMML3_ICA1_SOURCE_XLSX")
+    if env_source:
+        candidates.append(Path(env_source).expanduser())
+
+    candidates.extend(DEFAULT_SOURCE_CANDIDATES)
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.resolve()
+
+    searched = "\n".join(f"- {path}" for path in candidates)
+    raise FileNotFoundError(
+        "Raw spreadsheet not found.\n"
+        "Provide --source or set CMML3_ICA1_SOURCE_XLSX.\n"
+        "The repository already includes data/selected_dap_recordings.csv, so the final report figures can still be "
+        "reproduced without the original spreadsheet.\n"
+        f"Searched:\n{searched}"
+    )
 
 
 def longest_monotonic_segment(times_s: np.ndarray) -> np.ndarray:
@@ -79,13 +121,15 @@ def spike_stats(times_s: np.ndarray) -> dict[str, float]:
 
 
 def main() -> None:
+    args = parse_args()
     repo_root = Path(__file__).resolve().parents[1]
     data_dir = repo_root / "data"
     analysis_dir = repo_root / "analysis"
     data_dir.mkdir(exist_ok=True)
     analysis_dir.mkdir(exist_ok=True)
 
-    raw = pd.read_excel(SOURCE_XLSX)
+    source_xlsx = resolve_source_xlsx(args.source)
+    raw = pd.read_excel(source_xlsx)
 
     export_columns: dict[str, pd.Series] = {}
     metrics_rows: list[dict[str, float | str]] = []
@@ -147,6 +191,7 @@ def main() -> None:
     overlay_png = analysis_dir / "selected_dap_overlay.png"
     fig.savefig(overlay_png, dpi=160)
 
+    print(f"source {source_xlsx}")
     print(f"wrote {export_csv}")
     print(f"wrote {metrics_csv}")
     print(f"wrote {overlay_png}")

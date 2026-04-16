@@ -1,0 +1,79 @@
+{
+  "MAL11E": {
+    "baseline": {
+      "psprate": 400,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.05,
+      "halflifeAHP": 300,
+      "kDAP": 0.0,
+      "useNMDA": 0
+    },
+    "simple_dap": {
+      "psprate": 380,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.05,
+      "halflifeAHP": 300,
+      "kDAP": 0.6,
+      "halflifeDAP": 80,
+      "useNMDA": 0
+    },
+    "nmda_only": {
+      "psprate": 350,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.05,
+      "halflifeAHP": 300,
+      "kDAP": 0.0,
+      "useNMDA": 1,
+      "pspmag2": 0.8,
+      "psprate2": 350,
+      "halflifePSP2": 120.0,
+      "nmdaSync": 0
+    },
+    "no_ahp": {
+      "psprate": 400,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.0,
+      "halflifeAHP": 300,
+      "kDAP": 0.0,
+      "useNMDA": 0
+    }
+  },
+  "CBA1R8C1": {
+    "baseline": {
+      "psprate": 340,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.1,
+      "halflifeAHP": 300,
+      "kDAP": 0.0,
+      "useNMDA": 0
+    },
+    "simple_dap": {
+      "psprate": 330,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.1,
+      "halflifeAHP": 300,
+      "kDAP": 0.8,
+      "halflifeDAP": 80,
+      "useNMDA": 0
+    },
+    "nmda_only": {
+      "psprate": 318,
+      "kHAP": 50,
+      "halflifeHAP": 8,
+      "kAHP": 0.1,
+      "halflifeAHP": 300,
+      "kDAP": 0.0,
+      "useNMDA": 1,
+      "pspmag2": 0.8,
+      "psprate2": 300,
+      "halflifePSP2": 120.0,
+      "nmdaSync": 0
+    }
+  }
+}

@@ -38,15 +38,17 @@ class SpikeBox(ParamBox):
         self.paramset.AddCon("kDAP", "kDAP", 2.0, 0.1, 2)
         self.paramset.AddCon("halflifeDAP", "halflifeDAP", 40, 1, 2)
         self.paramset.AddCon("useNMDA", "useNMDA", 1, 1, 0)
-        self.paramset.AddCon("kNMDA", "kNMDA", 0.8, 0.05, 2)
-        self.paramset.AddCon("halflifeNMDARise", "NMDA Rise HL", 8.0, 0.5, 2, 85)
-        self.paramset.AddCon("halflifeNMDADecay", "NMDA Decay HL", 120.0, 5, 2, 85)
+        self.paramset.AddCon("pspmag2", "NMDA PSP Mag", 0.8, 0.05, 2)
+        self.paramset.AddCon("psprate2", "NMDA PSP Rate", 300, 1, 0, 85)
+        self.paramset.AddCon("halflifePSP2", "NMDA PSP HL", 120.0, 5, 2, 85)
+        self.paramset.AddCon("nmdaSync", "NMDA Sync", 1, 1, 0)
 
         self.paramset.GetCon("runtime").SetMinMax(10, 10000)
         self.paramset.GetCon("useNMDA").SetMinMax(0, 1, True)
-        self.paramset.GetCon("kNMDA").SetMinMax(0, 20)
-        self.paramset.GetCon("halflifeNMDARise").SetMinMax(0, 1000)
-        self.paramset.GetCon("halflifeNMDADecay").SetMinMax(0, 5000)
+        self.paramset.GetCon("pspmag2").SetMinMax(0, 20)
+        self.paramset.GetCon("psprate2").SetMinMax(0, 5000)
+        self.paramset.GetCon("halflifePSP2").SetMinMax(0, 5000)
+        self.paramset.GetCon("nmdaSync").SetMinMax(0, 1, True)
 
         self.ParamLayout(2)   # layout parameter controls in two columns
 

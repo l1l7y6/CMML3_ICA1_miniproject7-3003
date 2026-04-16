@@ -1,20 +1,85 @@
-# CMML3 ICA1 Mini-project7 - by 3003
+# CMML3 ICA1 Mini-project 7
 
-This repository contains code for my CMML3 ICA1 mini-project on modelling the depolarising afterpotential (DAP) in oxytocin neurones using HypoMod.
+This repository contains my CMML3 ICA1 mini-project on modelling the depolarising afterpotential (DAP) in oxytocin neurones using the supplied HypoMod framework.
+
+## Submission map
+
+- Main report: `analysis/ica1_report.md` and `analysis/ica1_report.docx`
+- Supporting materials: `analysis/ica1_supporting_materials.docx`
+- Supplementary methods: `analysis/ica1_supplementary_methods.md`
+- Supporting display items: `analysis/ica1_supporting_display_items.md`
+- Reflection: `analysis/ica1_reflection.md`
+- Reproducible figures/tables: `analysis/ica1_figure1_spike_fits.png`, `analysis/ica1_figure2_system_outputs.png`, `analysis/ica1_model_comparison.csv`, `analysis/ica1_secretion_sweeps.csv`, `analysis/ica1_varying_input_summary.csv`
 
 ## Main files
-- `SpikeModPython.py` – entry point
-- `spikemod.py` – main spiking model
-- `spikepanels.py` – parameter panel definitions
-- `HypoModPy/` – supporting HypoMod framework
 
-## Modifications
-- Added a simple DAP mechanism to the existing integrate-and-fire model
-- Modified panel parameters to support DAP fitting
-- Compared baseline and simple DAP fits for selected recordings
+- `SpikeModPython.py`: GUI entry point
+- `spikemod.py`: main spiking and secretion model
+- `spikepanels.py`: parameter panel definitions
+- `tools/prepare_selected_dap_data.py`: export the selected recordings from the raw spreadsheet
+- `tools/fit_selected_dap_baseline.py`: headless baseline fit sweep
+- `tools/generate_ica1_results.py`: generate the report-ready comparison tables and figures
+- `tools/build_word_docs.py`: build the report/supporting `.docx` files from the Markdown sources
+- `tools/rebuild_submission.py`: one-command rebuild for the submission outputs
 
-## Run
-Run the program with:
+## Model changes
+
+- Added a simple spike-triggered DAP branch to the integrate-and-fire model
+- Added an NMDA-based alternative DAP branch with a simple voltage dependence
+- Added optional scheduled PSP-rate input for reproducible varying-input tests
+- Preserved the secretion model (`secB`, `secE`, `secC`, `secX`, `secPlasma`) for downstream analysis
+
+## Environment
+
+- Recommended platform: Windows with Python 3.12
+- Install dependencies with `pip install -r requirements.txt`
+- `wxPython` is required because the supplied HypoMod code still depends on `wx`, even for the headless analysis scripts
+
+## Quick reproduction
+
+Rebuild the final analysis outputs and Word documents with:
 
 ```bash
-python SpikeModPython.py
+python tools/rebuild_submission.py
+```
+
+This runs the headless figure/table generation and rebuilds the report/supporting `.docx` files.
+
+If you want to run the steps separately:
+
+```bash
+python tools/generate_ica1_results.py
+python tools/build_word_docs.py
+```
+
+The main outputs are written to `analysis/`, including:
+
+- `ica1_figure1_spike_fits.png`
+- `ica1_figure2_system_outputs.png`
+- `ica1_supplementary_figure_s1_fit_breakdown.png`
+- `ica1_supplementary_figure_s2_numeric_summaries.png`
+- `ica1_model_comparison.csv`
+- `ica1_secretion_sweeps.csv`
+- `ica1_varying_input_summary.csv`
+- `ica1_parameter_sets.json`
+- `ica1_report.docx`
+- `ica1_supporting_materials.docx`
+
+## Rebuilding the selected-recording CSV from the raw spreadsheet
+
+The repository already includes `data/selected_dap_recordings.csv`, so the submitted figures/tables can be reproduced without the original spreadsheet.
+
+If the raw spreadsheet is available, regenerate the selected-recording export with:
+
+```bash
+python tools/prepare_selected_dap_data.py --source "path\\to\\oxydata dap cells.xlsx"
+```
+
+You can also set the environment variable `CMML3_ICA1_SOURCE_XLSX` instead of passing `--source`.
+
+## Scoring note
+
+- The final model-comparison score in `tools/generate_ica1_results.py` is a weighted fit score where lower is better
+- The formula is `0.25 * freq_error + 0.30 * hist_error + 0.20 * haz_error + 0.25 * iod_error`
+- Histogram and hazard errors are taken from the first 40 bins (`0-200 ms`), and IoD error is taken from the first 7 IoD points
+- The earlier baseline search in `tools/fit_selected_dap_baseline.py` uses a two-stage version of the same idea: stage 1 uses firing rate, histogram and hazard; stage 2 adds IoD for the final comparison

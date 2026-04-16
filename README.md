@@ -2,15 +2,6 @@
 
 This repository contains my CMML3 ICA1 mini-project on modelling the depolarising afterpotential (DAP) in oxytocin neurones using the supplied HypoMod framework.
 
-## Submission map
-
-- Main report: `analysis/ica1_report.md` and `analysis/ica1_report.docx`
-- Supporting materials: `analysis/ica1_supporting_materials.docx`
-- Supplementary methods: `analysis/ica1_supplementary_methods.md`
-- Supporting display items: `analysis/ica1_supporting_display_items.md`
-- Reflection: `analysis/ica1_reflection.md`
-- Reproducible figures/tables: `analysis/ica1_figure1_spike_fits.png`, `analysis/ica1_figure2_system_outputs.png`, `analysis/ica1_model_comparison.csv`, `analysis/ica1_secretion_sweeps.csv`, `analysis/ica1_varying_input_summary.csv`
-
 ## Main files
 
 - `SpikeModPython.py`: GUI entry point
@@ -62,8 +53,6 @@ The main outputs are written to `analysis/`, including:
 - `ica1_secretion_sweeps.csv`
 - `ica1_varying_input_summary.csv`
 - `ica1_parameter_sets.json`
-- `ica1_report.docx`
-- `ica1_supporting_materials.docx`
 
 ## Rebuilding the selected-recording CSV from the raw spreadsheet
 
